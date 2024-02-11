@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+# This overrides resize_early from /usr/share/initramfs-tools because it only supports msdos partition types
+install -m 755 files/resize_early		"${ROOTFS_DIR}/etc/initramfs-tools/scripts/local-premount/"
+
+# This overrides set_partuuid from /usr/share/initramfs-tools because it only supports msdos partition types
+install -m 755 files/set_partuuid	"${ROOTFS_DIR}/etc/initramfs-tools/scripts/local-bottom/"
+
+install -m 755 files/sgdisk-hook		"${ROOTFS_DIR}/etc/initramfs-tools/hooks/sgdisk"
+
 if [ -n "${PUBKEY_SSH_FIRST_USER}" ]; then
 	install -v -m 0700 -o 1000 -g 1000 -d "${ROOTFS_DIR}"/home/"${FIRST_USER_NAME}"/.ssh
 	echo "${PUBKEY_SSH_FIRST_USER}" >"${ROOTFS_DIR}"/home/"${FIRST_USER_NAME}"/.ssh/authorized_keys

@@ -74,6 +74,11 @@ The following environment variables are supported:
    checkout the appropriate branch. For example, if you'd like to build a
    `bullseye` image, you should do so from the `bullseye` branch.
 
+* `PARTITION_TABLE_TYPE` (Default: msdos)
+
+   The type of the partition table. By default an _msdos_ (MBR) table is created. Other supported partition table
+   types are _gpt_. Use the latter if your device is larger than 2TB.
+
  * `APT_PROXY` (Default: unset)
 
    If you require the use of an apt proxy, set it here.  This proxy setting
