@@ -1,1 +1,3 @@
 systemd-timesyncd
+btrfs-progs
+btrfs-compsize

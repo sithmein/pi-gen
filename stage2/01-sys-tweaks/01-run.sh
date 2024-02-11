@@ -7,6 +7,7 @@ install -m 755 files/resize_early		"${ROOTFS_DIR}/etc/initramfs-tools/scripts/lo
 install -m 755 files/set_partuuid	"${ROOTFS_DIR}/etc/initramfs-tools/scripts/local-bottom/"
 
 install -m 755 files/sgdisk-hook		"${ROOTFS_DIR}/etc/initramfs-tools/hooks/sgdisk"
+install -m 755 files/btrfstune-hook		"${ROOTFS_DIR}/etc/initramfs-tools/hooks/btrfstune"
 
 if [ -n "${PUBKEY_SSH_FIRST_USER}" ]; then
 	install -v -m 0700 -o 1000 -g 1000 -d "${ROOTFS_DIR}"/home/"${FIRST_USER_NAME}"/.ssh

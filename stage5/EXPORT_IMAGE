@@ -4,4 +4,6 @@ if [ "${USE_QEMU}" = "1" ]; then
 fi
 if [ "$PARTITION_TABLE_TYPE" != "msdos" ]; then
 	export IMG_SUFFIX="${IMG_SUFFIX}-${PARTITION_TABLE_TYPE}"
+if [ "$FILE_SYSTEM_TYPE" != "ext4" ]; then
+	export IMG_SUFFIX="${IMG_SUFFIX}-${FILE_SYSTEM_TYPE}"
 fi

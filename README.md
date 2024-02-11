@@ -9,6 +9,13 @@ Raspberry Pi OS 64 bit images are based primarily on Debian.
 **Note**: 32 bit images should be built from the `master` branch.
 64 bit images should be built from the `arm64` branch.
 
+> [!NOTE]
+> This is a fork of the original [pi-gen](https://github.com/RPi-Distro/pi-gen) repository that adds support for
+> GPT partition table and btrfs root file system - see the configuration options `FILE_SYSTEM_TYPE`  and `PARTITION_TABLE_TYPE` below. Unfortunately the
+> original repository did not accept my [feature request](https://github.com/RPi-Distro/pi-gen/issues/751)
+> therefore I am maintaining this fork.
+
+
 ## Dependencies
 
 pi-gen runs on Debian-based operating systems released after 2017, and we
@@ -21,8 +28,8 @@ To install the required dependencies for `pi-gen` you should run:
 
 ```bash
 apt install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
-dosfstools e2fsprogs libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
-gpg pigz xxd arch-test bmap-tools kmod
+dosfstools e2fsprogs btrfs-progs libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
+gpg pigz xxd arch-test bmap-tools kmod kpartx
 ```
 
 The file `depends` contains a list of tools needed.  The format of this
@@ -73,6 +80,11 @@ The following environment variables are supported:
    packages available, you'll need to either modify your stages accordingly, or
    checkout the appropriate branch. For example, if you'd like to build a
    `bullseye` image, you should do so from the `bullseye` branch.
+
+* `FILE_SYSTEM_TYPE` (Default: ext4)
+
+   The type of the root file system. By default an _ext4_ file system is created. Other supported root
+   file systems are _btrfs_.
 
 * `PARTITION_TABLE_TYPE` (Default: msdos)
 

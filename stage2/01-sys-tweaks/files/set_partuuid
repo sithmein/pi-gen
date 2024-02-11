@@ -64,6 +64,20 @@ fix_diskid () {
   fi
 }
 
+change_btrfs_uuid () {
+  if [ "$ROOTFSTYPE" == "btrfs" ]; then
+    log_begin_msg "Changing file system UUID..."
+    btrfstune -u "$ROOT" <<EOF
+y
+EOF
+    RET=$?
+    if [ $RET -ne 0 ]; then
+      FAIL_REASON="Change root file system UUID failed\n$FAIL_REASON"
+    fi
+    return $RET
+  fi
+}
+
 get_variables
 
 log_begin_msg "Setting new disk ID..."
@@ -80,7 +94,15 @@ fi
 
 sed -i 's| resize||g' /run/new_diskid/cmdline.txt
 umount /run/new_diskid
-mount -o remount,ro "$ROOT" "${rootmnt?}/"
+umount "$ROOT"
+
+if [ "$ROOT_PART_NUM" -eq 2 ]; then
+  change_btrfs_uuid
+else
+  log_warning_msg "File system ID setup skipped due to unexpected partition table"
+fi
+
+mount -o ro "$ROOT" "${rootmnt?}/"
 rmdir /run/new_diskid
 
 
