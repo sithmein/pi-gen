@@ -24,11 +24,11 @@ BOOT_PART_START=$((ALIGN))
 BOOT_PART_SIZE=$(((BOOT_SIZE + ALIGN - 1) / ALIGN * ALIGN))
 ROOT_PART_START=$((BOOT_PART_START + BOOT_PART_SIZE))
 ROOT_PART_SIZE=$(((ROOT_SIZE + ROOT_MARGIN + ALIGN  - 1) / ALIGN * ALIGN))
-IMG_SIZE=$((BOOT_PART_START + BOOT_PART_SIZE + ROOT_PART_SIZE))
+IMG_SIZE=$((BOOT_PART_START + BOOT_PART_SIZE + ROOT_PART_SIZE + ALIGN))
 
 truncate -s "${IMG_SIZE}" "${IMG_FILE}"
 
-parted --script "${IMG_FILE}" mklabel msdos
+parted --script "${IMG_FILE}" mklabel "${PARTITION_TABLE_TYPE}"
 parted --script "${IMG_FILE}" unit B mkpart primary fat32 "${BOOT_PART_START}" "$((BOOT_PART_START + BOOT_PART_SIZE - 1))"
 parted --script "${IMG_FILE}" unit B mkpart primary ${FILE_SYSTEM_TYPE} "${ROOT_PART_START}" "$((ROOT_PART_START + ROOT_PART_SIZE - 1))"
 
