@@ -21,8 +21,8 @@ To install the required dependencies for `pi-gen` you should run:
 
 ```bash
 apt-get install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
-dosfstools e2fsprogs libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
-gpg pigz xxd arch-test bmap-tools
+dosfstools btrfs-progs libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
+gpg pigz xxd arch-test bmap-tools kpartx
 ```
 
 The file `depends` contains a list of tools needed.  The format of this
@@ -67,6 +67,12 @@ The following environment variables are supported:
    for official Raspberry Pi builds.
 
 * `RELEASE` (Default: `bookworm`)
+
+* `FILE_SYSTEM_TYPE` (Default: ext4)
+
+   The type of the root file system. By default an _ext4_ file system is created. Other supported root
+   file systems are _btrfs_.
+
 
    The release version to build images against. Valid values are any supported
    Debian release. However, since different releases will have different sets of

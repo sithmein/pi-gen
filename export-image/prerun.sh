@@ -30,7 +30,7 @@ truncate -s "${IMG_SIZE}" "${IMG_FILE}"
 
 parted --script "${IMG_FILE}" mklabel msdos
 parted --script "${IMG_FILE}" unit B mkpart primary fat32 "${BOOT_PART_START}" "$((BOOT_PART_START + BOOT_PART_SIZE - 1))"
-parted --script "${IMG_FILE}" unit B mkpart primary ext4 "${ROOT_PART_START}" "$((ROOT_PART_START + ROOT_PART_SIZE - 1))"
+parted --script "${IMG_FILE}" unit B mkpart primary ${FILE_SYSTEM_TYPE} "${ROOT_PART_START}" "$((ROOT_PART_START + ROOT_PART_SIZE - 1))"
 
 echo "Creating loop device..."
 cnt=0
@@ -49,13 +49,6 @@ ensure_loopdev_partitions "$LOOP_DEV"
 BOOT_DEV="${LOOP_DEV}p1"
 ROOT_DEV="${LOOP_DEV}p2"
 
-ROOT_FEATURES="^huge_file"
-for FEATURE in 64bit; do
-if grep -q "$FEATURE" /etc/mke2fs.conf; then
-	ROOT_FEATURES="^$FEATURE,$ROOT_FEATURES"
-fi
-done
-
 if [ "$BOOT_SIZE" -lt 134742016 ]; then
 	FAT_SIZE=16
 else
@@ -63,10 +56,39 @@ else
 fi
 
 mkdosfs -n bootfs -F "$FAT_SIZE" -s 4 -v "$BOOT_DEV" > /dev/null
-mkfs.ext4 -L rootfs -O "$ROOT_FEATURES" "$ROOT_DEV" > /dev/null
 
-mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t ext4
-mkdir -p "${ROOTFS_DIR}/boot/firmware"
+# Create root file system
+if [ "${FILE_SYSTEM_TYPE}" == "ext4" ]; then
+	ROOT_FEATURES="^huge_file"
+	for FEATURE in 64bit; do
+	if grep -q "$FEATURE" /etc/mke2fs.conf; then
+		ROOT_FEATURES="^$FEATURE,$ROOT_FEATURES"
+	fi
+	done
+
+	mkfs.ext4 -L rootfs -O "$ROOT_FEATURES" "$ROOT_DEV" > /dev/null
+	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t ext4
+	mkdir -p "${ROOTFS_DIR}/boot/firmware"
+elif [ "$FILE_SYSTEM_TYPE" == "btrfs" ]; then
+	mkfs.btrfs -L rootfs "$ROOT_DEV" > /dev/null
+
+	# Create subvolumes for common directories
+	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t btrfs
+	cd "${ROOTFS_DIR}"
+	btrfs subvolume create @
+	btrfs subvolume create @home
+	btrfs subvolume set-default @
+	cd -
+	umount "${ROOTFS_DIR}"
+
+	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t btrfs -o subvol=@
+	mkdir -p "${ROOTFS_DIR}/home" "${ROOTFS_DIR}/var/lib" "${ROOTFS_DIR}/boot/firmware"
+	mount -v "$ROOT_DEV" "${ROOTFS_DIR}/home" -t btrfs -o subvol=@home
+else
+	echo "Unsupported root file system type '${FILE_SYSTEM_TYPE}'. Only ext4 and btrfs are supported."
+	exit 1
+fi
+
 mount -v "$BOOT_DEV" "${ROOTFS_DIR}/boot/firmware" -t vfat
 
 rsync -aHAXx --exclude /var/cache/apt/archives --exclude /boot/firmware "${EXPORT_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
