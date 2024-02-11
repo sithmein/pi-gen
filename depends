@@ -20,3 +20,4 @@ bc
 gpg
 pigz
 arch-test
+btrfs:btrfs-progs
