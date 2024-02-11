@@ -8,6 +8,8 @@ install -m 644 files/50raspi		"${ROOTFS_DIR}/etc/apt/apt.conf.d/"
 
 install -m 644 files/console-setup   	"${ROOTFS_DIR}/etc/default/"
 
+install -m 755 files/sgdisk-hook		"${ROOTFS_DIR}/etc/initramfs-tools/hooks/sgdisk"
+
 sed -i "s| rootwait| rootwait quiet init=/usr/lib/raspberrypi-sys-mods/firstboot|" "${ROOTFS_DIR}/boot/firmware/cmdline.txt"
 
 if [ -n "${PUBKEY_SSH_FIRST_USER}" ]; then

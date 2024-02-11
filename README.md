@@ -68,17 +68,21 @@ The following environment variables are supported:
 
 * `RELEASE` (Default: `trixie`)
 
-* `FILE_SYSTEM_TYPE` (Default: ext4)
-
-   The type of the root file system. By default an _ext4_ file system is created. Other supported root
-   file systems are _btrfs_.
-
-
    The release version to build images against. Valid values are any supported
    Debian release. However, since different releases will have different sets of
    packages available, you'll need to either modify your stages accordingly, or
    checkout the appropriate branch. For example, if you'd like to build a
    `bullseye` image, you should do so from the `bullseye` branch.
+
+* `FILE_SYSTEM_TYPE` (Default: ext4)
+
+   The type of the root file system. By default an _ext4_ file system is created. Other supported root
+   file systems are _btrfs_.
+
+* `PARTITION_TABLE_TYPE` (Default: msdos)
+
+   The type of the partition table. By default an _msdos_ (MBR) table is created. Other supported partition table
+   types are _gpt_. Use the latter if your device is larger than 2TB.
 
  * `APT_PROXY` (Default: unset)
 
