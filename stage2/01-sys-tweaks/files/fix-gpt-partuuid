@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+# Changes the partition UUIDs to new random values.
+#
+
+set -e
+
+case "${1}" in
+  prereqs)
+    exit 0
+    ;;
+esac
+
+if ! grep -q firstboot /proc/cmdline; then
+  exit 0
+fi
+
+get_variables () {
+  set +e # This function does not work as intended with -e
+  local_device_setup "$ROOT" "root file system"
+  set -e
+  ROOT_PART_NAME="$(lsblk -no kname "$DEV")"
+
+  ROOT_DEV_NAME="$(lsblk -no pkname "$DEV")"
+  ROOT_DEV="/dev/$ROOT_DEV_NAME"
+
+  ROOT_PART_NUM=$(cat "/sys/block/$ROOT_DEV_NAME/$ROOT_PART_NAME/partition")
+
+  BOOT_DEV="$(findmnt -n -o SOURCE -s -F ${rootmnt}/etc/fstab /boot/firmware)"
+  BOOT_DEV="$(resolve_device "$BOOT_DEV")"
+}
+
+change_part_uuids() {
+  if parted -s -m -l "$ROOT_DEV" | grep -q ':gpt:'; then
+    # Change partition UUIDs
+    log_begin_msg "Changing partition UUIDs"
+
+    OLD_BOOT_PARTUUID=$(sgdisk -i 1 "$ROOT_DEV" | grep "Partition unique GUID" | awk '{ print tolower($NF) }')
+    OLD_ROOT_PARTUUID=$(sgdisk -i 2 "$ROOT_DEV" | grep "Partition unique GUID" | awk '{ print tolower($NF) }')
+
+    mount -o remount,rw ${rootmnt}
+    mkdir -p /run/boot
+    mount -o rw "$BOOT_DEV" /run/boot
+
+    NEW_BOOT_UUID=$(cat /proc/sys/kernel/random/uuid)
+    NEW_ROOT_UUID=$(cat /proc/sys/kernel/random/uuid)
+    NEW_DISK_UUID=$(cat /proc/sys/kernel/random/uuid)
+    sgdisk --partition-guid=1:$NEW_BOOT_UUID --partition-guid=2:$NEW_ROOT_UUID --disk-guid=$NEW_DISK_UUID "$ROOT_DEV"
+
+    if [ "$?" -eq 0 ]; then
+      partprobe
+      sed -i "s/${OLD_BOOT_PARTUUID}/${NEW_BOOT_UUID}/g" ${rootmnt}/etc/fstab
+      sed -i "s/${OLD_ROOT_PARTUUID}/${NEW_ROOT_UUID}/g" ${rootmnt}/etc/fstab
+      sed -i "s/${OLD_ROOT_PARTUUID}/${NEW_ROOT_UUID}/g" /run/boot/cmdline.txt
+      sync
+    fi
+
+    umount /run/boot
+    rmdir /run/boot
+    if [ "$readonly" == "y" ]; then
+      FSTYPE="$(findmnt -n -o FSTYPE ${rootmnt})"
+      umount ${rootmnt}
+      mount -o ro -t $FSTYPE $ROOT ${rootmnt}
+    fi
+
+    log_end_msg
+  fi
+}
+
+. /scripts/functions
+. /scripts/local
+
+get_variables
+change_part_uuids
+
+log_end_msg
+
+exit 0

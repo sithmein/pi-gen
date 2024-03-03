@@ -55,11 +55,24 @@ do_resize () {
   fi
 }
 
+change_fs_uuid () {
+  if [ "$ROOTFSTYPE" == "btrfs" ]; then
+    log_begin_msg "Changing file system UUID..."
+    echo y | btrfstune -u "$DEV"
+    RET="$?"
+    if [ "$RET" -ne 0 ]; then
+      FAIL_REASON="Change root file system UUID failed\n$FAIL_REASON"
+    fi
+    return "$RET"
+  fi
+}
+
 . /scripts/functions
 . /scripts/local
 
 get_variables
 do_resize
+change_fs_uuid
 
 log_end_msg
 
