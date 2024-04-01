@@ -5,8 +5,8 @@ install -v -m 644 files/fstab "${ROOTFS_DIR}/etc/fstab"
 if [ "${FILE_SYSTEM_TYPE}" == "ext4" ]; then
 	echo "ROOTDEV  /               ext4    defaults,noatime  0       1" >> "${ROOTFS_DIR}/etc/fstab"
 elif [ "${FILE_SYSTEM_TYPE}" == "btrfs" ]; then
-	echo "ROOTDEV  /               btrfs   subvol=@,defaults,noatime  0       1" >> "${ROOTFS_DIR}/etc/fstab"
-	echo "ROOTDEV  /home           btrfs   subvol=@home,defaults,noatime  0       1" >> "${ROOTFS_DIR}/etc/fstab"
+	echo "ROOTDEV  /               btrfs   subvol=@,compress=zstd,defaults,noatime  0       1" >> "${ROOTFS_DIR}/etc/fstab"
+	echo "ROOTDEV  /home           btrfs   subvol=@home,compress=zstd,defaults,noatime  0       1" >> "${ROOTFS_DIR}/etc/fstab"
 else
 	echo "Unsupported root file system type '${FILE_SYSTEM_TYPE}'. Only ext4 and btrfs are supported."
 	exit 1

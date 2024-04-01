@@ -81,9 +81,9 @@ elif [ "$FILE_SYSTEM_TYPE" == "btrfs" ]; then
 	cd -
 	umount "${ROOTFS_DIR}"
 
-	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t btrfs -o subvol=@
+	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t btrfs -o subvol=@,compress=zstd
 	mkdir -p "${ROOTFS_DIR}/home" "${ROOTFS_DIR}/var/lib" "${ROOTFS_DIR}/boot/firmware"
-	mount -v "$ROOT_DEV" "${ROOTFS_DIR}/home" -t btrfs -o subvol=@home
+	mount -v "$ROOT_DEV" "${ROOTFS_DIR}/home" -t btrfs -o subvol=@home,compress=zstd
 else
 	echo "Unsupported root file system type '${FILE_SYSTEM_TYPE}'. Only ext4 and btrfs are supported."
 	exit 1
